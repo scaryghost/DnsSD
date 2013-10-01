@@ -3,6 +3,11 @@
 #include <ctime>
 #include <stdexcept>
 
+#define PROPERTY_GETTER(type, variable, fnName)\
+type SRVRecord::get##fnName() const {\
+    return variable;\
+}
+
 #define PROPERTY_SETTER(type, param, fnName)\
 SRVRecord::Builder& SRVRecord::Builder::with##fnName(type param) {\
     record->param= param;\
@@ -20,25 +25,11 @@ SRVRecord::SRVRecord(int ttl) : port(-1), priority(0), weight(0), ttl(ttl) {
     expireTime= now + ttl;
 }
 
-const string& SRVRecord::getHostname() const {
-    return hostname;
-}
-
-uint16_t SRVRecord::getPort() const {
-    return port;
-}
-
-uint16_t SRVRecord::getPriority() const {
-    return priority;
-}
-
-uint16_t SRVRecord::getWeight() const {
-    return weight;
-}
-
-int SRVRecord::getTTL() const {
-    return ttl;
-}
+PROPERTY_GETTER(const string&, hostname, Hostname)
+PROPERTY_GETTER(uint16_t, port, Port)
+PROPERTY_GETTER(uint16_t, priority, Priority)
+PROPERTY_GETTER(uint16_t, weight, Weight)
+PROPERTY_GETTER(int, ttl, TTL)
 
 bool SRVRecord::hasExpired() const {
     time_t now;
