@@ -2,6 +2,7 @@
 #define ETSAI_DNSSD_SRVRECORD_H
 
 #include <cstdint>
+#include <ctime>
 #include <memory>
 #include <string>
 
@@ -14,14 +15,13 @@ using std::string;
 class SRVRecord {
     class Builder {
     public:
-        Builder();
+        Builder(int ttl);
         ~Builder();
 
         Builder& withHostname(const string& hostname);
         Builder& withPort(uint16_t port);
         Builder& withPriority(uint16_t priority);
         Builder& withWeight(uint16_t weight);
-        Builder& withTTL(int ttl);
 
         shared_ptr<SRVRecord> buildSRVRecord() const;
 
@@ -34,18 +34,20 @@ class SRVRecord {
     uint16_t getPriority() const;
     uint16_t getWeight() const;
     int getTTL() const;
+    bool hasExpired() const;
 
     bool operator <(const SRVRecord& record) const;
 
 private:
-    SRVRecord();
+    SRVRecord(int ttl);
 
-    string hostname;
     uint16_t port, priority, weight;
     int ttl;
-};
+    time_t expireTime;
+    string hostname;
+};  //class DnsSD
 
-}
-}
+}   //namespace dnssd
+}   //namespace etsai
 
 #endif

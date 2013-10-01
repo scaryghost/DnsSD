@@ -1,4 +1,6 @@
 #include "DnsSD/SRVRecord.h"
+
+#include <ctime>
 #include <stdexcept>
 
 #define PROPERTY_SETTER(type, param, fnName)\
@@ -12,7 +14,10 @@ namespace dnssd {
 
 using std::runtime_error;
 
-SRVRecord::SRVRecord() : port(-1), priority(0), weight(0), ttl(0) {
+SRVRecord::SRVRecord(int ttl) : port(-1), priority(0), weight(0), ttl(ttl) {
+    time_t now;
+    time(&now);
+    expireTime= now + ttl;
 }
 
 const string& SRVRecord::getHostname() const {
@@ -35,12 +40,19 @@ int SRVRecord::getTTL() const {
     return ttl;
 }
 
+bool SRVRecord::hasExpired() const {
+    time_t now;
+    time(&now);
+
+    return expireTime < now;
+}
+
 bool SRVRecord::operator <(const SRVRecord& record) const {
     return priority < record.priority || (priority == record.priority && 
             weight < record.weight);
 }
 
-SRVRecord::Builder::Builder() : record(new SRVRecord()) {
+SRVRecord::Builder::Builder(int ttl) : record(new SRVRecord(ttl)) {
 }
 
 SRVRecord::Builder::~Builder() {
@@ -51,7 +63,6 @@ PROPERTY_SETTER(const string&, hostname, Hostname)
 PROPERTY_SETTER(uint16_t, port, Port)
 PROPERTY_SETTER(uint16_t, priority, Priority)
 PROPERTY_SETTER(uint16_t, weight, Weight)
-PROPERTY_SETTER(int, ttl, TTL)
 
 shared_ptr<SRVRecord> SRVRecord::Builder::buildSRVRecord() const {
     if (record->hostname.empty() || record->port < 0) {
