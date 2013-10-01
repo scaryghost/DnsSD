@@ -48,7 +48,7 @@ bool SRVRecord::hasExpired() const {
 }
 
 bool SRVRecord::operator <(const SRVRecord& record) const {
-    return priority < record.priority || (priority == record.priority && 
+    return priority > record.priority || (priority == record.priority && 
             weight < record.weight);
 }
 
