@@ -105,10 +105,10 @@ class SRVRecord {
     bool hasExpired() const;
 
     /**
-     * Determines if the caller SRV record is less than the SRv record passed in as the parameter.
-     * The comparison is determined first by evaulating this.priority > record.priority, and 
-     * if both prioriiest are equal, then evaluating this.weight < record.weight as the tiebreaker.
-     * @return  True if this < record based on the priority and weight of the two records
+     * Determines if the caller SRV record should be used before the parameter record.
+     * The comparison is determined first by evaulating this.priority < record.priority, and 
+     * if both priorities are equal, then evaluating this.weight > record.weight as the tiebreaker.
+     * @return  True if this record should be used before parameter record
      */
     bool operator <(const SRVRecord& record) const;
 
