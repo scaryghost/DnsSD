@@ -2,9 +2,12 @@
 #define ETSAI_DNSSD_TXT_RECORD_H
 
 #include "DnsSD/RecordType.h"
+#include <string>
 
 namespace etsai {
 namespace dnssd {
+
+using std::string;
 
 class TXTRecord : public RecordType {
 public:

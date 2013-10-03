@@ -1,5 +1,8 @@
 #include "DnsSD/RecordType.h"
 
+namespace etsai {
+namespace dnssd {
+
 RecordType::RecordType(int ttl) : ttl(ttl) {
     time_t now;
     time(&now);
@@ -17,3 +20,5 @@ bool RecordType::hasExpired() const {
     return expireTime < now;
 }
 
+}
+}
