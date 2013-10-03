@@ -1,8 +1,9 @@
 #ifndef ETSAI_DNSSD_SRVRECORD_H
 #define ETSAI_DNSSD_SRVRECORD_H
 
+#include "DnsSD/RecordType.h"
+
 #include <cstdint>
-#include <ctime>
 #include <memory>
 #include <string>
 
@@ -17,7 +18,7 @@ using std::string;
  * are taken from: http://dns-sd.org/ and http://www.faqs.org/rfcs/rfc2782.html
  * @author etsai
  */
-class SRVRecord {
+class SRVRecord : public RecordType {
     /**
      * Auxiliary class to assist with building an SRV record.  All SRV records 
      * must be created using this builder.
@@ -93,16 +94,6 @@ class SRVRecord {
      * @return  Record's weight
      */
     uint16_t getWeight() const;
-    /**
-     * Get the TTL of the SRV record
-     * @return  Record's TTL
-     */
-    int getTTL() const;
-    /**
-     * Determines if the SRV Record has expired based on its creation time and TTL value.
-     * @return  True if the record has expired
-     */
-    bool hasExpired() const;
 
     /**
      * Determines if the caller SRV record should be used before the parameter record.
@@ -120,8 +111,6 @@ private:
     SRVRecord(int ttl);
 
     uint16_t port, priority, weight;
-    int ttl;
-    time_t expireTime;
     string hostname;
 };  //class DnsSD
 

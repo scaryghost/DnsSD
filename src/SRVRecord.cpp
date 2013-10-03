@@ -19,24 +19,13 @@ namespace dnssd {
 
 using std::runtime_error;
 
-SRVRecord::SRVRecord(int ttl) : port(-1), priority(0), weight(0), ttl(ttl) {
-    time_t now;
-    time(&now);
-    expireTime= now + ttl;
+SRVRecord::SRVRecord(int ttl) : RecordType(ttl), port(-1), priority(0), weight(0) {
 }
 
 PROPERTY_GETTER(const string&, hostname, Hostname)
 PROPERTY_GETTER(uint16_t, port, Port)
 PROPERTY_GETTER(uint16_t, priority, Priority)
 PROPERTY_GETTER(uint16_t, weight, Weight)
-PROPERTY_GETTER(int, ttl, TTL)
-
-bool SRVRecord::hasExpired() const {
-    time_t now;
-    time(&now);
-
-    return expireTime < now;
-}
 
 bool SRVRecord::operator <(const SRVRecord& record) const {
     return priority < record.priority || (priority == record.priority && 
