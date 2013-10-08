@@ -6,7 +6,7 @@
 
 #include <memory>
 #include <map>
-#include <vector>
+#include <set>
 
 #include <arpa/nameser.h>
 
@@ -15,7 +15,7 @@ namespace dnssd {
 
 using std::shared_ptr;
 using std::map;
-using std::vector;
+using std::set;
 
 enum NetProtocol {
     TCP,
@@ -27,12 +27,17 @@ public:
     ServiceLocator(const string &service, NetProtocol protocol, const string &domain);
 
     const SRVRecord& getNextSrvRecord();
-    const vector<shared_ptr<SRVRecord>> getSrvRecords();
+    const map<int, set<shared_ptr<SRVRecord>, SPComparator>>& getSrvRecords();
     const string& getTextValue();
 
     const string& getQueryString() const;
 
 private:
+    struct SPComparator {
+        bool operator()(const shared_ptr<SRVRecord> &left, const shared_ptr<SRVRecord> &right) {
+            return (*left) < (*right);
+        }
+    };
     void query(ns_type type);
 
     string service, domain;
@@ -40,7 +45,7 @@ private:
     string queryString;
     
     shared_ptr<TXTRecord> txtRecord;
-    map<int, vector<shared_ptr<SRVRecord>>> srvRecords;
+    map<int, set<shared_ptr<SRVRecord>, SPComparator>> srvRecords;
 };  //class ServiceLocator
 
 }   //namespace dnssd

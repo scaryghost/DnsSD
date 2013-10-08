@@ -19,6 +19,7 @@ using std::string;
  * @author etsai
  */
 class SRVRecord : public RecordType {
+public:
     /**
      * Auxiliary class to assist with building an SRV record.  All SRV records 
      * must be created using this builder.
