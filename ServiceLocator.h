@@ -2,6 +2,7 @@
 #define ETSAI_DNSSD_SERVICE_LOCATOR_H
 
 #include "SRVRecord.h"
+#include "TXTRecord.h"
 
 #include <memory>
 #include <map>
@@ -32,11 +33,14 @@ public:
     const string& getQueryString() const;
 
 private:
+    void query(ns_type type);
+
     string service, domain;
     NetProtocol protocol;
     string queryString;
     
-    map<ns_type, ns_msg> queries;
+    shared_ptr<TXTRecord> txtRecord;
+    map<int, vector<shared_ptr<SRVRecord>>> srvRecords;
 };  //class ServiceLocator
 
 }   //namespace dnssd
