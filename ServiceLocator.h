@@ -29,7 +29,7 @@ public:
     ServiceLocator(const string &service, NetProtocol protocol, const string &domain);
 
     const SRVRecord& getNextSrvRecord();
-    const map<int, set<shared_ptr<SRVRecord>, SPComparator>>& getSrvRecords();
+    vector<shared_ptr<SRVRecord>> getSrvRecords() const;
     const string& getTextValue() const;
 
     const string& getQueryString() const;

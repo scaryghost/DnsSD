@@ -39,9 +39,10 @@ const SRVRecord& ServiceLocator::getNextSrvRecord() {
     if (srvRecords[lowestPriority].size() == 0) {
         srvRecords.erase(lowestPriority);
     }
-    return *(usedSrvRecords.end());
+    return *(*(usedSrvRecords.cend()));
 }
-const map<int, set<shared_ptr<SRVRecord>, ServiceLocator::SPComparator>>& ServiceLocator::getSrvRecords() {
+
+vector<shared_ptr<SRVRecord>> ServiceLocator::getSrvRecords() const {
     throw runtime_error("Not yet implemented");
 }
 const string& ServiceLocator::getTextValue() const {
