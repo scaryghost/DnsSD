@@ -43,7 +43,11 @@ const SRVRecord& ServiceLocator::getNextSrvRecord() {
 }
 
 vector<shared_ptr<SRVRecord>> ServiceLocator::getSrvRecords() const {
-    throw runtime_error("Not yet implemented");
+    vector<shared_ptr<SRVRecord>> records;
+    for(auto it: srvRecords) {
+        records.insert(records.end(), it.second.begin(), it.second.end());
+    }
+    return records;
 }
 const string& ServiceLocator::getTextValue() const {
     return txtRecord->getText();
