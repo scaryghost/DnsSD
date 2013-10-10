@@ -7,6 +7,7 @@
 #include <memory>
 #include <map>
 #include <set>
+#include <vector>
 
 #include <arpa/nameser.h>
 
@@ -16,6 +17,7 @@ namespace dnssd {
 using std::shared_ptr;
 using std::map;
 using std::set;
+using std::vector;
 
 enum NetProtocol {
     TCP,
@@ -28,7 +30,7 @@ public:
 
     const SRVRecord& getNextSrvRecord();
     const map<int, set<shared_ptr<SRVRecord>, SPComparator>>& getSrvRecords();
-    const string& getTextValue();
+    const string& getTextValue() const;
 
     const string& getQueryString() const;
 
@@ -46,6 +48,7 @@ private:
     
     shared_ptr<TXTRecord> txtRecord;
     map<int, set<shared_ptr<SRVRecord>, SPComparator>> srvRecords;
+    vector<shared_ptr<SRVRecord>> usedSrvRecords;
 };  //class ServiceLocator
 
 }   //namespace dnssd

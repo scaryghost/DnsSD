@@ -1,5 +1,6 @@
 #include "DnsSD/ServiceLocator.h"
 
+#include <cstdlib>
 #include <functional>
 #include <resolv.h>
 #include <sstream>
@@ -17,15 +18,33 @@ ServiceLocator::ServiceLocator(const string &service, NetProtocol protocol,
     for(auto type: {ns_t_txt, ns_t_srv}) {
         query(type);
     }
+
+    srand(time(NULL));
 }
 
 const SRVRecord& ServiceLocator::getNextSrvRecord() {
+    int lowestPriority= srvRecords.begin()->first;
+    int totalWeight= 0, targetWeight, accumWeight= 0;
+    
+    for(auto it: srvRecords[lowestPriority]) {
+        totalWeight+= it->getWeight();
+    }
+    targetWeight= rand() % (totalWeight + 1);
+    auto it= srvRecords[lowestPriority].begin();
+    while((accumWeight+= (*it)->getWeight()) < targetWeight) {
+        it++;
+    }
+    usedSrvRecords.push_back(*it);
+    srvRecords[lowestPriority].erase(it);
+    if (srvRecords[lowestPriority].size() == 0) {
+        srvRecords.erase(lowestPriority);
+    }
+    return *(usedSrvRecords.end());
+}
+const map<int, set<shared_ptr<SRVRecord>, ServiceLocator::SPComparator>>& ServiceLocator::getSrvRecords() {
     throw runtime_error("Not yet implemented");
 }
-const map<int, set<shared_ptr<SRVRecord>, SPComparator>>& ServiceLocator::getSrvRecords() {
-    return srvRecords;
-}
-const string& ServiceLocator::getTextValue() {
+const string& ServiceLocator::getTextValue() const {
     return txtRecord->getText();
 }
 
