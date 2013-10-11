@@ -1,5 +1,6 @@
 #include "DnsSD/SRVRecord.h"
 
+#include <algorithm>
 #include <ctime>
 #include <stdexcept>
 
@@ -14,9 +15,12 @@ SRVRecord::Builder& SRVRecord::Builder::with##fnName(type param) {\
     return *this;\
 }
 
+#define COMPARE(param) (param > record.param ? 1 : (param == record.param ? 0 : -1))
+
 namespace etsai {
 namespace dnssd {
 
+using std::inner_product;
 using std::runtime_error;
 
 SRVRecord::SRVRecord(int ttl) : RecordType(ttl), port(-1), priority(0), weight(0) {
@@ -28,8 +32,10 @@ PROPERTY_GETTER(uint16_t, priority, Priority)
 PROPERTY_GETTER(uint16_t, weight, Weight)
 
 bool SRVRecord::operator <(const SRVRecord& record) const {
-    return priority < record.priority || (priority == record.priority && 
-            weight > record.weight);
+    auto values= {COMPARE(priority), COMPARE(weight), COMPARE(hostname), COMPARE(port)};
+    auto weights= {8, 4, 2, 1};
+
+    return inner_product(values.begin(), values.end(), weights.begin(), 0) < 0;
 }
 
 SRVRecord::Builder::Builder(int ttl) : record(new SRVRecord(ttl)) {

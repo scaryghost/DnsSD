@@ -18,7 +18,7 @@ $(LIB_NAME): $(OBJS)
 %.o: %.cpp
 	$(CPPC) -c $(CPP_FLAGS) $(INC) $< -o $@
 
-clean: cleandeps cleanobjs
+clean: cleanobjs
 
 cleanobjs:
 	rm -f $(OBJS)

@@ -32,7 +32,7 @@ public:
 
 private:
     struct SPComparator {
-        bool operator()(const shared_ptr<SRVRecord> &left, const shared_ptr<SRVRecord> &right) {
+        bool operator()(const shared_ptr<SRVRecord> &left, const shared_ptr<SRVRecord> &right) const {
             return (*left) < (*right);
         }
     };
