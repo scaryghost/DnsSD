@@ -1,6 +1,7 @@
 #ifndef ETSAI_DNSSD_SERVICE_LOCATOR_H
 #define ETSAI_DNSSD_SERVICE_LOCATOR_H
 
+#include "NetProtocol.h"
 #include "SRVRecord.h"
 #include "TXTRecord.h"
 
@@ -19,14 +20,9 @@ using std::map;
 using std::set;
 using std::vector;
 
-enum NetProtocol {
-    TCP,
-    UDP
-};
-
 class ServiceLocator {
 public:
-    ServiceLocator(const string &service, NetProtocol protocol, const string &domain);
+    ServiceLocator(const string &service, NetProtocol const* protocol, const string &domain);
 
     const SRVRecord& getNextSrvRecord();
     vector<shared_ptr<SRVRecord>> getSrvRecords() const;
@@ -43,7 +39,7 @@ private:
     void query(ns_type type);
 
     string service, domain;
-    NetProtocol protocol;
+    NetProtocol const* protocol;
     string queryString;
     
     shared_ptr<TXTRecord> txtRecord;

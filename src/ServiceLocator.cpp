@@ -13,7 +13,7 @@ using std::function;
 using std::runtime_error;
 using std::stringstream;
 
-ServiceLocator::ServiceLocator(const string &service, NetProtocol protocol, 
+ServiceLocator::ServiceLocator(const string &service, NetProtocol const* protocol, 
         const string &domain) : service(service), domain(domain), protocol(protocol) {
     for(auto type: {ns_t_txt, ns_t_srv}) {
         query(type);
@@ -59,20 +59,8 @@ const string& ServiceLocator::getQueryString() const {
 
 void ServiceLocator::query(ns_type type) {
     stringstream queryStream;
-    string protocolStr;
 
-    switch (protocol) {
-        case UDP:
-            protocolStr= "udp";
-            break;
-        case TCP:
-            protocolStr= "tcp";
-            break;
-        default:
-            throw runtime_error("Unrecognized protocol.  See NetProtocol definition in ServiceLocator.h");
-    }
-
-    queryStream << "_" << service << "._" << protocolStr << "." << domain;
+    queryStream << "_" << service << "._" << protocol->getName() << "." << domain;
     queryString= queryStream.str();
     
     ns_msg nsMsg;

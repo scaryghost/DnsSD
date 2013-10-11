@@ -1,7 +1,7 @@
 CPPC=g++
 CPP_FLAGS=-std=c++11 -Wall -Werror
 
-SRCS:= RecordType.cpp ServiceLocator.cpp SRVRecord.cpp  TXTRecord.cpp
+SRCS:= RecordType.cpp ServiceLocator.cpp SRVRecord.cpp  TXTRecord.cpp NetProtocol.cpp
 SRCS:=$(addprefix src/,$(SRCS))
 OBJS:=$(patsubst %.cpp, %.o, $(SRCS))
 
