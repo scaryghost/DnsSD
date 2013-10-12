@@ -66,6 +66,23 @@ void ServiceLocator::query(ns_type type) {
     ns_msg nsMsg;
     unsigned char query_buffer[1024];
     int response= res_query(queryString.c_str(), C_IN, type, query_buffer, sizeof(query_buffer));
+    if (response < 0) {
+        stringstream msg;
+
+        msg << "Error retriving ";
+        switch (type) {
+            case ns_t_txt:
+                msg << "TXT";
+                break;
+            case ns_t_srv:
+                msg << "SRV";
+                break;
+            default:
+                throw runtime_error("Only TXT and SRV records supported");
+        }
+        msg << " records for: " << queryString;
+        throw runtime_error(msg.str()); 
+    }
     ns_initparse(query_buffer, response, &nsMsg);
 
     map<ns_type, function<void (const ns_rr &rr)>> callbacks;
