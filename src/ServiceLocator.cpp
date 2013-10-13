@@ -39,7 +39,7 @@ const SRVRecord& ServiceLocator::getNextSrvRecord() {
     if (srvRecords[lowestPriority].size() == 0) {
         srvRecords.erase(lowestPriority);
     }
-    return *(*(usedSrvRecords.cend()));
+    return *(usedSrvRecords.back());
 }
 
 vector<shared_ptr<SRVRecord>> ServiceLocator::getSrvRecords() const {
