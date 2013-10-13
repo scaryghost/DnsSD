@@ -1,8 +1,8 @@
 #include "DnsSD/SRVRecord.h"
+#include "ExceptionImpl.h"
 
 #include <algorithm>
 #include <ctime>
-#include <stdexcept>
 
 #define PROPERTY_GETTER(type, variable, fnName)\
 type SRVRecord::get##fnName() const {\
@@ -21,7 +21,6 @@ namespace etsai {
 namespace dnssd {
 
 using std::inner_product;
-using std::runtime_error;
 
 SRVRecord::SRVRecord(int ttl) : RecordType(ttl), port(-1), priority(0), weight(0) {
 }
@@ -52,7 +51,7 @@ PROPERTY_SETTER(uint16_t, weight, Weight)
 
 shared_ptr<SRVRecord> SRVRecord::Builder::buildSRVRecord() const {
     if (record->hostname.empty() || record->port < 0) {
-        throw runtime_error("Hostname and port must be set for an SRVRecord object");
+        throw ExceptionImpl(ERROR_SRV_BUILDER, "Hostname and port must be set to build an SRVRecord object");
     }
     return record;
 }

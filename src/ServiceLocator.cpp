@@ -1,9 +1,9 @@
 #include "DnsSD/ServiceLocator.h"
+#include "ExceptionImpl.h"
 
 #include <cstdlib>
 #include <functional>
 #include <resolv.h>
-#include <sstream>
 #include <stdexcept>
 
 namespace etsai {
@@ -11,7 +11,6 @@ namespace dnssd {
 
 using std::function;
 using std::runtime_error;
-using std::stringstream;
 
 ServiceLocator::ServiceLocator(const string &service, NetProtocol const* protocol, 
         const string &domain) : service(service), domain(domain), protocol(protocol) {
@@ -26,6 +25,9 @@ const SRVRecord& ServiceLocator::getNextSrvRecord() {
     int lowestPriority= srvRecords.begin()->first;
     int totalWeight= 0, targetWeight, accumWeight= 0;
     
+    if (srvRecords.empty()) {
+        throw ExceptionImpl(ERROR_NO_UNUSED_SRV_RECORDS, "All SRV records have been used");
+    }
     for(auto it: srvRecords[lowestPriority]) {
         totalWeight+= it->getWeight();
     }
@@ -47,6 +49,7 @@ vector<shared_ptr<SRVRecord>> ServiceLocator::getSrvRecords() const {
     for(auto it: srvRecords) {
         records.insert(records.end(), it.second.begin(), it.second.end());
     }
+    records.insert(records.end(), usedSrvRecords.begin(), usedSrvRecords.end());
     return records;
 }
 const string& ServiceLocator::getTextValue() const {
@@ -58,30 +61,21 @@ const string& ServiceLocator::getQueryString() const {
 }
 
 void ServiceLocator::query(ns_type type) {
-    stringstream queryStream;
+    if (type != ns_t_txt && type != ns_t_srv) {
+        throw ExceptionImpl(INVALID_NS_TYPE, "Only TXT and SRV records supported");
+    }
 
-    queryStream << "_" << service << "._" << protocol->getName() << "." << domain;
-    queryString= queryStream.str();
+    queryString= "_" + service + "._" + protocol->getName() + "." + domain;
     
     ns_msg nsMsg;
     unsigned char query_buffer[1024];
     int response= res_query(queryString.c_str(), C_IN, type, query_buffer, sizeof(query_buffer));
     if (response < 0) {
-        stringstream msg;
+        ExceptionImpl::Builder builder;
 
-        msg << "Error retriving ";
-        switch (type) {
-            case ns_t_txt:
-                msg << "TXT";
-                break;
-            case ns_t_srv:
-                msg << "SRV";
-                break;
-            default:
-                throw runtime_error("Only TXT and SRV records supported");
-        }
-        msg << " records for: " << queryString;
-        throw runtime_error(msg.str()); 
+        builder.withMessage("Error retriving ") << (type == ns_t_txt ? "TXT" : "SRV") 
+                << " records for: " << queryString;
+        throw ExceptionImpl(ERROR_DNSSD_QUERY, builder.buildMessage()); 
     }
     ns_initparse(query_buffer, response, &nsMsg);
 

@@ -1,4 +1,5 @@
 #include "DnsSD/NetProtocol.h"
+#include "ExceptionImpl.h"
 
 #include <algorithm>
 #include <cctype>
@@ -22,7 +23,7 @@ NetProtocol const* NetProtocol::getNetProtocol(string name) {
     transform(name.begin(), name.end(), name.begin(), ptr_fun<int, int>(tolower));
 
     if (!netprotoLookup.count(name)) {
-        throw runtime_error("Invalid NetProtocol name: " + name);
+        throw ExceptionImpl(INVALID_NET_PROTOCOL, "Invalid NetProtocol name: " + name);
     }
     return netprotoLookup.find(name)->second;
 }
