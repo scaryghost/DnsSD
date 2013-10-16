@@ -10,7 +10,11 @@
 #include <set>
 #include <vector>
 
+#ifndef WIN32
 #include <arpa/nameser.h>
+#else
+#include <windows.h>
+#endif
 
 namespace etsai {
 namespace dnssd {
@@ -36,7 +40,11 @@ private:
             return (*left) < (*right);
         }
     };
+#ifndef WIN32
     void query(ns_type type);
+#else
+    void query(WORD type);
+#endif
 
     string service, domain;
     NetProtocol const* protocol;

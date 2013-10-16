@@ -3,8 +3,14 @@
 
 #include <cstdlib>
 #include <functional>
-#include <resolv.h>
 #include <stdexcept>
+
+#ifndef WIN32
+#include <resolv.h>
+#else
+#include <Rpc.h>
+#include <windns.h>
+#endif
 
 namespace etsai {
 namespace dnssd {
@@ -14,7 +20,11 @@ using std::runtime_error;
 
 ServiceLocator::ServiceLocator(const string &service, NetProtocol const* protocol, 
         const string &domain) : service(service), domain(domain), protocol(protocol) {
+#ifndef WIN32
     for(auto type: {ns_t_txt, ns_t_srv}) {
+#else
+    for(auto type: {DNS_TYPE_TEXT, DNS_TYPE_SRV}) {
+#endif
         query(type);
     }
 
@@ -60,6 +70,7 @@ const string& ServiceLocator::getQueryString() const {
     return queryString;
 }
 
+#ifndef WIN32
 void ServiceLocator::query(ns_type type) {
     if (type != ns_t_txt && type != ns_t_srv) {
         throw ExceptionImpl(INVALID_NS_TYPE, "Only TXT and SRV records supported");
@@ -105,6 +116,49 @@ void ServiceLocator::query(ns_type type) {
         }
     }
 }
+#else
+void ServiceLocator::query(WORD type) {
+    if (type != DNS_TYPE_TEXT && type != DNS_TYPE_SRV) {
+        throw ExceptionImpl(INVALID_NS_TYPE, "Only TXT and SRV records supported");
+    }
+
+    queryString= "_" + service + "._" + protocol->getName() + "." + domain;
+
+    PDNS_RECORD pDnsRecord;
+    if (DnsQuery_A(queryString.c_str(), type, DNS_QUERY_BYPASS_CACHE, NULL, &pDnsRecord, NULL)) {
+        ExceptionImpl::Builder builder;
+
+        builder.withMessage("Error retriving ") << (type == DNS_TYPE_TEXT ? "TXT" : "SRV") 
+                << " records for: " << queryString;
+        throw ExceptionImpl(ERROR_DNSSD_QUERY, builder.buildMessage()); 
+    }
+
+    map<WORD, function<void (PDNS_RECORD it)>> callbacks;
+    callbacks[DNS_TYPE_SRV]= [this](PDNS_RECORD it) -> void {
+        SRVRecord::Builder builder(it->dwTtl);
+        shared_ptr<SRVRecord> record;
+
+        builder.withHostname((char *)RPC_CSTR(it->Data.SRV.pNameTarget)).withPriority(it->Data.SRV.wPriority)
+                .withWeight(it->Data.SRV.wWeight).withPort(it->Data.SRV.wPort);
+        record= builder.buildSRVRecord();
+        srvRecords[record->getPriority()].insert(record);
+    };
+    callbacks[DNS_TYPE_TEXT]= [this](PDNS_RECORD it) -> void {
+        string text;
+        for(DWORD i= 0; i < it->Data.TXT.dwStringCount; i++) {
+            text+= (char *)RPC_CSTR(it->Data.TXT.pStringArray[i]);
+        }
+        txtRecord.reset(new TXTRecord(it->dwTtl, text));
+    };
+
+     for(auto it= pDnsRecord; it != NULL; it= it->pNext) {
+        if (callbacks.count(it->wType)) {
+            callbacks[it->wType](it);
+        }
+    }
+    DnsRecordListFree(pDnsRecord, DnsFreeRecordListDeep);
+}
+#endif
 
 }
 }
