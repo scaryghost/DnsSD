@@ -9,6 +9,8 @@
 #else
 #include <Rpc.h>
 #include <windns.h>
+
+#pragma comment(lib, "Dnsapi.lib")
 #endif
 
 namespace etsai {
