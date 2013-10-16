@@ -3,7 +3,6 @@
 
 #include <cstdlib>
 #include <functional>
-#include <stdexcept>
 
 #ifndef WIN32
 #include <resolv.h>
@@ -16,14 +15,14 @@ namespace etsai {
 namespace dnssd {
 
 using std::function;
-using std::runtime_error;
 
 ServiceLocator::ServiceLocator(const string &service, NetProtocol const* protocol, 
         const string &domain) : service(service), domain(domain), protocol(protocol) {
 #ifndef WIN32
     for(auto type: {ns_t_txt, ns_t_srv}) {
 #else
-    for(auto type: {DNS_TYPE_TEXT, DNS_TYPE_SRV}) {
+    WORD types[]= {DNS_TYPE_TEXT, DNS_TYPE_SRV};
+    for(auto type: types) {
 #endif
         query(type);
     }

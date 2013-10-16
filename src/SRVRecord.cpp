@@ -1,8 +1,9 @@
 #include "DnsSD/SRVRecord.h"
 #include "ExceptionImpl.h"
 
-#include <algorithm>
 #include <ctime>
+#include <initializer_list>
+#include <numeric>
 
 #define PROPERTY_GETTER(type, variable, fnName)\
 type SRVRecord::get##fnName() const {\
@@ -20,6 +21,7 @@ SRVRecord::Builder& SRVRecord::Builder::with##fnName(type param) {\
 namespace etsai {
 namespace dnssd {
 
+using std::initializer_list;
 using std::inner_product;
 
 SRVRecord::SRVRecord(int ttl) : RecordType(ttl), port(-1), priority(0), weight(0) {
