@@ -8,7 +8,6 @@
 #include <memory>
 #include <map>
 #include <set>
-#include <vector>
 
 #ifndef WIN32
 #include <arpa/nameser.h>
@@ -22,7 +21,6 @@ namespace dnssd {
 using std::shared_ptr;
 using std::map;
 using std::set;
-using std::vector;
 
 class ServiceLocator {
 private:
