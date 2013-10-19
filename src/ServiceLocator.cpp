@@ -18,21 +18,14 @@ namespace dnssd {
 
 using std::function;
 
-ServiceLocator::ServiceLocator(const string &service, NetProtocol const* protocol, 
-        const string &domain) : service(service), domain(domain), protocol(protocol) {
-#ifndef WIN32
-    for(auto type: {ns_t_txt, ns_t_srv}) {
-#else
-    WORD types[]= {DNS_TYPE_TEXT, DNS_TYPE_SRV};
-    for(auto type: types) {
-#endif
-        query(type);
-    }
-
-    srand(time(NULL));
+ServiceLocator::SRVRecordIterator::SRVRecordIterator(const map<int, set<shared_ptr<SRVRecord>, SPComparator>>& copy) : srvRecords(copy) {
 }
 
-const SRVRecord& ServiceLocator::getNextSrvRecord() {
+bool ServiceLocator::SRVRecordIterator::hashNext() const {
+    return !srvRecords.empty();
+}
+
+const SRVRecord& ServiceLocator::SRVRecordIterator::next() {
     int lowestPriority= srvRecords.begin()->first;
     int totalWeight= 0, targetWeight, accumWeight= 0;
     
@@ -47,22 +40,31 @@ const SRVRecord& ServiceLocator::getNextSrvRecord() {
     while((accumWeight+= (*it)->getWeight()) < targetWeight) {
         it++;
     }
-    usedSrvRecords.push_back(*it);
     srvRecords[lowestPriority].erase(it);
     if (srvRecords[lowestPriority].size() == 0) {
         srvRecords.erase(lowestPriority);
     }
-    return *(usedSrvRecords.back());
+    return **it;
+}
+    
+ServiceLocator::ServiceLocator(const string &service, NetProtocol const* protocol, 
+        const string &domain) : service(service), domain(domain), protocol(protocol) {
+#ifndef WIN32
+    for(auto type: {ns_t_txt, ns_t_srv}) {
+#else
+    WORD types[]= {DNS_TYPE_TEXT, DNS_TYPE_SRV};
+    for(auto type: types) {
+#endif
+        query(type);
+    }
+
+    srand(time(NULL));
 }
 
-vector<shared_ptr<SRVRecord>> ServiceLocator::getSrvRecords() const {
-    vector<shared_ptr<SRVRecord>> records;
-    for(auto it: srvRecords) {
-        records.insert(records.end(), it.second.begin(), it.second.end());
-    }
-    records.insert(records.end(), usedSrvRecords.begin(), usedSrvRecords.end());
-    return records;
+ServiceLocator::SRVRecordIterator ServiceLocator::getSrvRecords() const {
+    return SRVRecordIterator(srvRecords);
 }
+
 const string& ServiceLocator::getTextValue() const {
     return txtRecord->getText();
 }
