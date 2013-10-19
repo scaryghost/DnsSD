@@ -23,8 +23,7 @@ int main(int argc, char **argv) {
         cout << "TXT Record: " << locator.getTextValue() << endl;
         while(records.hashNext()) {
             auto it= records.next();
-            cout << "SRV Record: {hostname: " << it.getHostname() << ", port: " << it.getPort() << 
-                    ", priority: " << it.getPriority() << ", weight: " << it.getWeight() << "}" << endl;
+            cout << "SRV Record: " << it.toString() << endl;
         }
 
     } catch (Exception &ex) {

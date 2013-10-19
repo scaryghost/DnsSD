@@ -39,6 +39,14 @@ bool SRVRecord::operator <(const SRVRecord& record) const {
     return inner_product(values.begin(), values.end(), weights.begin(), 0) < 0;
 }
 
+string SRVRecord::toString() const {
+    stringstream srvStream;
+
+    srvStream << "{priority: " << priority << ", weight: " << weight << 
+            ", port: " << port << ", hostname: " << hostname << "}";
+    return srvStream.str();
+}
+
 SRVRecord::Builder::Builder(int ttl) : record(new SRVRecord(ttl)) {
 }
 

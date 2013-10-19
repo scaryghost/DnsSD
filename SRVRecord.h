@@ -104,6 +104,11 @@ public:
      */
     bool operator <(const SRVRecord& record) const;
 
+    /**
+     * Generate the string representation of SRVRecord
+     * @return  String form of the record
+     */
+    string toString() const;
 private:
     /**
      * Constructs an SRVRecord with a specified ttl value
